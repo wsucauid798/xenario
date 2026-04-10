@@ -4,6 +4,7 @@ import type { LoadedScene, SceneMeta } from './components/ExperiencePlayer';
 import { ExperiencePlayer } from './components/ExperiencePlayer';
 import { LoadingScreen } from './components/LoadingScreen';
 import { loadPLYFromUrl } from './modules/PointCloudAsset';
+import { appPlatform, resolveSceneAssetUrl } from './platform';
 
 /* ── Manifest types ─────────────────────────────────────────────────────────── */
 
@@ -81,8 +82,8 @@ async function loadScene(
 ): Promise<LoadedScene> {
   const entry = manifest.scenes[index];
   const [asset, metaRes] = await Promise.all([
-    loadPLYFromUrl(`/scenes/${entry.plyFile}`),
-    fetch(`/scenes/${entry.metaFile}`),
+    loadPLYFromUrl(resolveSceneAssetUrl(entry.plyFile)),
+    fetch(resolveSceneAssetUrl(entry.metaFile)),
   ]);
   const meta: SceneMeta = await metaRes.json();
   return { asset, meta: orientSceneMeta(entry, meta) };
@@ -102,9 +103,13 @@ export default function App() {
   // Track which scene index we've started preloading
   const preloadingRef = useRef(-1);
 
+  useEffect(() => {
+    document.documentElement.dataset.appTarget = appPlatform.target;
+  }, []);
+
   // Fetch manifest + first scene on mount
   useEffect(() => {
-    fetch('/scenes/manifest.json')
+    fetch(appPlatform.sceneManifestUrl)
       .then((r) => r.json())
       .then((m: TourManifest) => {
         setManifest(m);

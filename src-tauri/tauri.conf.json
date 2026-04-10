@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "7th Month Return",
+  "version": "0.1.0",
+  "identifier": "net.williamsawyerr.seventhmonthreturn",
+  "build": {
+    "beforeDevCommand": "npm run dev:desktop:web",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeBuildCommand": "npm run build:desktop:web",
+    "frontendDist": "../dist-desktop"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "7th Month Return",
+        "width": 1280,
+        "height": 720,
+        "minWidth": 1024,
+        "minHeight": 640,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "category": "Entertainment",
+    "shortDescription": "A cinematic point-cloud walkthrough.",
+    "longDescription": "A cinematic, limited-interaction walkthrough through Dajing Village point-cloud scans."
+  }
+}

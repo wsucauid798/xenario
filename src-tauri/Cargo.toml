@@ -1,0 +1,16 @@
+[package]
+name = "seventh_month_return"
+version = "0.1.0"
+description = "7th Month Return"
+authors = ["William Sawyerr"]
+edition = "2021"
+
+[lib]
+name = "seventh_month_return_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }

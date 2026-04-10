@@ -22,6 +22,20 @@ npm install
 npm run dev
 ```
 
+## Target Builds
+
+```sh
+npm run build:web
+npm run build:xr
+npm run build:desktop:web
+npm run desktop:build:win
+npm run desktop:build:mac
+```
+
+`desktop:build:win` is for Windows. `desktop:build:mac` must be run on macOS or
+a macOS CI runner. Desktop builds use Tauri and package the optimized files from
+`public/scenes/`, not the raw scans from `data/raw-scenes/`.
+
 ## Preprocessing
 
 Raw PLY scans belong in `data/raw-scenes/scene_*/`.
@@ -49,6 +63,7 @@ The preprocess step writes optimized scene assets and the tour manifest into
 - TypeScript
 - Three.js
 - Tailwind CSS v4
+- Tauri
 - Biome
 
 ## License
