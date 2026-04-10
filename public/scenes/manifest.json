@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "scenes": [
+    {
+      "sceneId": "scene_1",
+      "plyFile": "optimized/scene_1.ply",
+      "metaFile": "optimized/scene_1.meta.json",
+      "entryPoint": [
+        -3.223766198612567,
+        6.8928307772076725,
+        -62.564703923427444
+      ],
+      "exitPoint": [
+        3.9931905806964507,
+        -9.857448579768974,
+        58.30761696069085
+      ]
+    },
+    {
+      "sceneId": "scene_2",
+      "plyFile": "optimized/scene_2.ply",
+      "metaFile": "optimized/scene_2.meta.json",
+      "entryPoint": [
+        -116.20945375896214,
+        74.26432538630445,
+        -57.9536034562717
+      ],
+      "exitPoint": [
+        -111.88662438097663,
+        75.54882824693189,
+        -64.31697264538201
+      ]
+    },
+    {
+      "sceneId": "scene_3",
+      "plyFile": "optimized/scene_3.ply",
+      "metaFile": "optimized/scene_3.meta.json",
+      "entryPoint": [
+        -1.1723156926249423,
+        -0.46081849225461274,
+        -7.567706510310569
+      ],
+      "exitPoint": [
+        2.471605874864368,
+        0.6776464373661453,
+        7.437415124765085
+      ]
+    },
+    {
+      "sceneId": "scene_4",
+      "plyFile": "optimized/scene_4.ply",
+      "metaFile": "optimized/scene_4.meta.json",
+      "entryPoint": [
+        9.136523689553869,
+        -0.6790805345550255,
+        1.0274268690342925
+      ],
+      "exitPoint": [
+        3.957787436963027,
+        -0.4874164346296159,
+        -5.007797797276707
+      ]
+    },
+    {
+      "sceneId": "scene_5",
+      "plyFile": "optimized/scene_5.ply",
+      "metaFile": "optimized/scene_5.meta.json",
+      "entryPoint": [
+        3.8324111772355964,
+        -0.05329871082223658,
+        -3.267533044664487
+      ],
+      "exitPoint": [
+        -6.333786255611156,
+        -0.05113032168444881,
+        4.3325954145734515
+      ]
+    },
+    {
+      "sceneId": "scene_6",
+      "plyFile": "optimized/scene_6.ply",
+      "metaFile": "optimized/scene_6.meta.json",
+      "entryPoint": [
+        -3.1183921170818865,
+        -0.17052818648491608,
+        3.426972834387014
+      ],
+      "exitPoint": [
+        1.6210704798327322,
+        0.2562826076690302,
+        -3.202294888156718
+      ]
+    },
+    {
+      "sceneId": "scene_7",
+      "plyFile": "optimized/scene_7.ply",
+      "metaFile": "optimized/scene_7.meta.json",
+      "entryPoint": [
+        2.8126354824578588,
+        -0.0320431940513809,
+        0.9786579413675085
+      ],
+      "exitPoint": [
+        11.639376385823926,
+        0.16613718464166044,
+        -34.069634105521466
+      ]
+    },
+    {
+      "sceneId": "scene_8",
+      "plyFile": "optimized/scene_8.ply",
+      "metaFile": "optimized/scene_8.meta.json",
+      "entryPoint": [
+        4.192530591011424,
+        -0.8123883627422175,
+        -7.810791847169622
+      ],
+      "exitPoint": [
+        -9.931441797743151,
+        -0.9607163628831874,
+        -0.21791587582220195
+      ]
+    },
+    {
+      "sceneId": "scene_9",
+      "plyFile": "optimized/scene_9.ply",
+      "metaFile": "optimized/scene_9.meta.json",
+      "entryPoint": [
+        9.29203410797922,
+        -27.34730546921282,
+        -18.437221498080973
+      ],
+      "exitPoint": [
+        -3.7918290447919585,
+        88.40998632829428,
+        -258.31105617522894
+      ]
+    }
+  ],
+  "totalDuration": 272.5245993649854
+}

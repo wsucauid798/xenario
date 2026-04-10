@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 _design/
+
+# Raw scan data (too large for git)
+data/raw-scenes/

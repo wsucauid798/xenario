@@ -1,49 +1,52 @@
-# Xenario
+# 7th Month Return
 
-A web-first point cloud experience player. Drop in a `.ply` file and be taken on a cinematic guided journey through the scene. The camera moves itself along a path while you look around freely — like an FPS game cutscene, but inside a point cloud.
+A cinematic, limited-interaction walkthrough through nine point-cloud scans of
+Dajing Village.
 
-## Features
+The experience works like an interactive cutscene: the tour carries the viewer
+forward along an authored route, while still allowing limited looking and
+movement with mouse, touch, `WASD`, and arrow keys.
 
-- Load any `.ply` point cloud via drag-and-drop
-- Cinematic rail camera with auto-generated path from scene bounds
-- Limited look (yaw ±25°, pitch ±15°) with spring-back — desktop mouse and mobile touch
-- Custom camera path via optional `path.json`
-- Auto-downsampling for mobile performance
-- Depth fog and attenuated point rendering for a cinematic look
-- Play / pause, progress scrub, point size and speed controls
+## Experience
 
-## Usage
+- Start from a title screen
+- Move sequentially through scenes 1 to 9
+- Look around while the tour continues forward
+- Drift within controlled bounds, but not free-roam
+- Transition from one scan to the next as a continuous village walkthrough
 
-```
+## Getting Started
+
+```sh
 npm install
 npm run dev
 ```
 
-Drop a `.ply` file onto the load screen to start. Optionally drop a `path.json` alongside it to define a custom camera route.
+## Preprocessing
 
-Click the canvas to enable mouse look. Press `Escape` to release. On mobile, drag to look.
+Raw PLY scans belong in `data/raw-scenes/scene_*/`.
 
-### path.json format
-
-```json
-{
-  "duration": 60,
-  "waypoints": [
-    { "x": -4, "y": 0.3, "z": 0 },
-    { "x": 0,  "y": 0.3, "z": 2 },
-    { "x": 4,  "y": 0.4, "z": 0 }
-  ]
-}
+```sh
+npm run preprocess
 ```
 
-Waypoints are in normalised scene space (the scene is scaled so its longest axis spans 10 units).
+The preprocess step writes optimized scene assets and the tour manifest into
+`public/scenes/`.
+
+## Controls
+
+- Look: mouse drag or touch drag
+- Move: `WASD` or arrow keys
+- Start: click `Begin the walk`, press `Enter`, or press `Space`
 
 ## Tech
 
-- [Vite](https://vite.dev) + [React 19](https://react.dev) + TypeScript
-- [Three.js](https://threejs.org)
-- [Tailwind CSS v4](https://tailwindcss.com)
-- [Lucide React](https://lucide.dev)
+- Vite
+- React 19
+- TypeScript
+- Three.js
+- Tailwind CSS v4
+- Biome
 
 ## License
 
