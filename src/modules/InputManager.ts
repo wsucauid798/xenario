@@ -2,15 +2,19 @@
  * InputManager — keyboard (WASD / arrows) + split-zone touch input.
  * Pure imperative class, no React dependency.
  *
- * Desktop: WASD or arrow keys for movement.
- * Mobile: left 40% of screen is an invisible virtual joystick for movement.
+ * Desktop: A/D or left/right arrows for lateral drift. W/S or up/down arrows
+ * push the active tour speed slower/faster while held.
+ * Mobile: left 40% of screen is an invisible virtual joystick for lateral
+ * drift and speed control.
  * (Right 60% is handled by LimitedLookController for look.)
  */
 
 export interface InputState {
-  /** Normalized movement: x = strafe (right+), z = forward/back (forward+). Each in [-1, 1]. */
+  /** Normalized lateral movement: x = strafe (right+), z is reserved. */
   move: { x: number; z: number };
-  /** Whether any movement input is active right now */
+  /** Tour-speed intent: -1 slows, +1 speeds up while held. */
+  speedIntent: number;
+  /** Whether any lateral movement input is active right now */
   isMoving: boolean;
 }
 
@@ -60,25 +64,25 @@ export class InputManager {
 
   getState(): InputState {
     let mx = 0;
-    let mz = 0;
+    let speedIntent = 0;
 
     // Keyboard input
-    if (this.keys.has('KeyW') || this.keys.has('ArrowUp')) mz += 1;
-    if (this.keys.has('KeyS') || this.keys.has('ArrowDown')) mz -= 1;
+    if (this.keys.has('KeyW') || this.keys.has('ArrowUp')) speedIntent += 1;
+    if (this.keys.has('KeyS') || this.keys.has('ArrowDown')) speedIntent -= 1;
     if (this.keys.has('KeyD') || this.keys.has('ArrowRight')) mx += 1;
     if (this.keys.has('KeyA') || this.keys.has('ArrowLeft')) mx -= 1;
 
     // Touch input (additive)
     mx += this.touchDelta.x;
-    mz += this.touchDelta.z;
+    speedIntent += this.touchDelta.z;
 
     // Clamp
     mx = Math.max(-1, Math.min(1, mx));
-    mz = Math.max(-1, Math.min(1, mz));
+    speedIntent = Math.max(-1, Math.min(1, speedIntent));
 
-    const isMoving = Math.abs(mx) > 0.05 || Math.abs(mz) > 0.05;
+    const isMoving = Math.abs(mx) > 0.05;
 
-    return { move: { x: mx, z: mz }, isMoving };
+    return { move: { x: mx, z: 0 }, speedIntent, isMoving };
   }
 
   private onKeyDown(e: KeyboardEvent): void {

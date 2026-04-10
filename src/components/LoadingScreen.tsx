@@ -89,8 +89,7 @@ export function LoadingScreen({ ready, onBegin }: Props) {
               7th Month Return
             </h1>
             <p className="mx-auto max-w-2xl text-base leading-7 text-stone-300/88 sm:text-lg">
-              A guided night passage through nine sequential point-cloud scans
-              of Dajing Village.
+              A guided point-cloud passage through Dajing Village.
             </p>
             <p className="mx-auto max-w-xl text-sm leading-6 text-stone-400 sm:text-base">
               The tour carries you forward like a cutscene, but your hands still
@@ -126,7 +125,7 @@ export function LoadingScreen({ ready, onBegin }: Props) {
             )}
 
             <p className="text-[11px] tracking-[0.22em] text-stone-500 uppercase">
-              Mouse look · WASD / Arrows · Enter or Space to start
+              Enter / Space start · P pause · +/- speed
             </p>
           </div>
         </div>

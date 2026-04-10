@@ -182,38 +182,53 @@ export default function App() {
   // Tour ended screen
   if (tourEnded) {
     return (
-      <div className="w-full h-full bg-black flex flex-col items-center justify-center gap-10 select-none">
-        <div className="flex flex-col items-center gap-4">
-          <h1 className="experience-display-title text-white text-5xl sm:text-6xl lg:text-7xl leading-none text-center animate-[fadeIn_2s_ease-out]">
-            7th Month Return
-          </h1>
-          <div className="w-32 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          <p className="max-w-md text-center text-sm leading-6 text-stone-400">
-            Nine scanned passages, one continuous return.
-          </p>
+      <div className="relative min-h-screen overflow-hidden bg-black px-6 py-8 text-stone-100 select-none sm:px-8">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="experience-screen-vignette absolute inset-0" />
+          <div className="experience-atmosphere-glow absolute left-[18%] top-[26%] h-[24rem] w-[24rem] rounded-full opacity-70" />
+          <div className="experience-horizon-lines absolute inset-x-0 bottom-0 h-[34vh] opacity-70" />
         </div>
-        <button
-          type="button"
-          onClick={onRestart}
-          className="group relative px-10 py-3"
-        >
-          <span className="absolute inset-0 border border-white/20 rounded-full group-hover:border-white/50 transition-colors duration-500" />
-          <span className="experience-button-glow absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <span className="relative text-white/60 group-hover:text-white text-sm tracking-[0.2em] uppercase transition-colors duration-500">
-            Experience again
-          </span>
-        </button>
-        <p className="text-xs text-stone-500">
-          Developed by{' '}
-          <a
-            href="https://williamsawyerr.net"
-            target="_blank"
-            rel="noreferrer"
-            className="experience-footer-link transition-colors duration-300 hover:text-amber-100"
-          >
-            William Sawyerr
-          </a>
-        </p>
+
+        <div className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl flex-col justify-between">
+          <main className="flex flex-1 flex-col items-center justify-center gap-7 pb-16 text-center">
+            <p className="text-[11px] tracking-[0.34em] text-amber-200/70 uppercase">
+              End of Experience
+            </p>
+            <div className="flex flex-col items-center gap-4">
+              <h1 className="max-w-3xl text-4xl leading-tight text-stone-50 sm:text-6xl">
+                The return is complete.
+              </h1>
+              <p className="max-w-md text-sm leading-6 text-stone-400">
+                You have reached the end of the walkthrough.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onRestart}
+              className="group relative overflow-hidden rounded-full border border-stone-200/18 bg-stone-50/[0.05] px-8 py-3.5 text-left backdrop-blur-sm transition-all duration-500 hover:border-amber-200/45 hover:bg-stone-50/[0.09]"
+            >
+              <span className="experience-button-sheen absolute inset-y-0 left-0 w-24 -translate-x-28 bg-gradient-to-r from-transparent via-white/18 to-transparent transition-transform duration-700 group-hover:translate-x-[17rem]" />
+              <span className="experience-button-glow absolute inset-0 rounded-full opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              <span className="relative text-sm tracking-[0.22em] text-stone-100 uppercase">
+                Experience Again
+              </span>
+            </button>
+          </main>
+
+          <footer className="pb-3 text-center">
+            <p className="text-sm text-stone-400">
+              Developed by{' '}
+              <a
+                href="https://williamsawyerr.net"
+                target="_blank"
+                rel="noreferrer"
+                className="experience-footer-link text-stone-200 transition-colors duration-300 hover:text-amber-100"
+              >
+                William Sawyerr
+              </a>
+            </p>
+          </footer>
+        </div>
       </div>
     );
   }

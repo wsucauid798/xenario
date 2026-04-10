@@ -36,7 +36,10 @@ The preprocess step writes optimized scene assets and the tour manifest into
 ## Controls
 
 - Look: mouse drag or touch drag
-- Move: `WASD` or arrow keys
+- Drift left/right: `A` / `D`, or `Left` / `Right`
+- Hold to speed up / slow down while touring: `W` / `S`, or `Up` / `Down`
+- Pause/resume: `P`
+- Step tour speed: `+` / `-`
 - Start: click `Begin the walk`, press `Enter`, or press `Space`
 
 ## Tech

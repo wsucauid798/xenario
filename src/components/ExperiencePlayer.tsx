@@ -16,6 +16,8 @@ export interface SceneMeta {
     waypoints: [number, number, number][];
   };
   floor: {
+    normal: [number, number, number];
+    distance: number;
     height: number;
     confidence: number;
   };
@@ -49,6 +51,16 @@ interface Props {
   preloadedNext: LoadedScene | null;
   onSceneSwap: () => void;
   onTourEnd: () => void;
+}
+
+const DEFAULT_TOUR_SPEED = 0.35;
+const MIN_TOUR_SPEED = 0.15;
+const MAX_TOUR_SPEED = 1.25;
+const TOUR_SPEED_STEP = 0.1;
+const TOUR_SPEED_RAMP_PER_SECOND = 0.18;
+
+function clampTourSpeed(speed: number): number {
+  return THREE.MathUtils.clamp(speed, MIN_TOUR_SPEED, MAX_TOUR_SPEED);
 }
 
 function deriveWalkableBounds(meta: SceneMeta): {
@@ -142,6 +154,9 @@ function buildTourCameraConfig(meta: SceneMeta): TourCameraConfig {
       height: s.floorHeight,
     })),
     baseFloorHeight: meta.floor.height,
+    floorNormal: new THREE.Vector3(...meta.floor.normal),
+    floorDistance: meta.floor.distance,
+    floorConfidence: meta.floor.confidence,
     eyeHeight: 1.6,
     moveSpeed: 0.7,
     walkableMin: walkableBounds.min,
@@ -159,6 +174,8 @@ export function ExperiencePlayer({
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showHints, setShowHints] = useState(true);
+  const [tourSpeed, setTourSpeed] = useState(DEFAULT_TOUR_SPEED);
+  const [paused, setPaused] = useState(false);
 
   // Refs for values that change between renders but are read in the animation loop
   const preloadRef = useRef(preloadedNext);
@@ -171,6 +188,49 @@ export function ExperiencePlayer({
   onTourEndRef.current = onTourEnd;
   const totalScenesRef = useRef(totalScenes);
   totalScenesRef.current = totalScenes;
+  const tourSpeedRef = useRef(tourSpeed);
+  tourSpeedRef.current = tourSpeed;
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
+
+  useEffect(() => {
+    const adjustSpeed = (direction: 1 | -1) => {
+      setTourSpeed((current) =>
+        clampTourSpeed(
+          Math.round((current + direction * TOUR_SPEED_STEP) * 100) / 100,
+        ),
+      );
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      if (event.code === 'KeyP') {
+        event.preventDefault();
+        setPaused((current) => !current);
+        return;
+      }
+
+      if (event.code === 'Equal' || event.code === 'NumpadAdd') {
+        event.preventDefault();
+        adjustSpeed(1);
+        return;
+      }
+
+      if (event.code === 'Minus' || event.code === 'NumpadSubtract') {
+        event.preventDefault();
+        adjustSpeed(-1);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   // Show hints briefly each time sceneIndex changes
   useEffect(() => {
@@ -276,12 +336,29 @@ export function ExperiencePlayer({
 
       // 1. Read input
       const input = inputManager.getState();
+      let currentSpeed = tourSpeedRef.current;
+      if (!pausedRef.current && input.speedIntent !== 0) {
+        currentSpeed = clampTourSpeed(
+          tourSpeedRef.current +
+            input.speedIntent * TOUR_SPEED_RAMP_PER_SECOND * delta,
+        );
+        tourSpeedRef.current = currentSpeed;
+        setTourSpeed((current) =>
+          Math.abs(current - currentSpeed) > 0.005 ? currentSpeed : current,
+        );
+      }
 
       // 2. Update look controller
       lookController.update(delta);
 
       // 3. Update tour camera (auto-drift or manual movement)
-      tourCamera.update(delta, input, lookController.yawAngle);
+      tourCamera.update(
+        delta,
+        input,
+        lookController.yawAngle,
+        currentSpeed,
+        pausedRef.current,
+      );
 
       // 4. Apply to THREE camera
       camera.position.copy(tourCamera.position);
@@ -291,10 +368,12 @@ export function ExperiencePlayer({
 
       // 5. Check transition trigger
       const isLastScene = sceneIndexRef.current >= totalScenesRef.current - 1;
-      transition.checkTrigger(tourCamera.guideT, isLastScene ? 0.95 : 0.92);
+      if (!pausedRef.current) {
+        transition.checkTrigger(tourCamera.guideT, isLastScene ? 0.95 : 0.92);
+      }
 
       // 6. Update transition fog
-      transition.update(delta);
+      transition.update(pausedRef.current ? 0 : delta);
       if (transition.phase !== 'idle') {
         pointCloud.setFog(
           transition.computeFogNear(baseFogNear),
@@ -339,8 +418,9 @@ export function ExperiencePlayer({
       <div ref={containerRef} className="w-full h-full" />
       <HUD
         sceneIndex={sceneIndex}
-        totalScenes={totalScenes}
         showHints={showHints}
+        tourSpeed={tourSpeed}
+        paused={paused}
       />
     </div>
   );

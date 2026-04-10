@@ -11,6 +11,12 @@ export interface TourCameraConfig {
   heightSamples: { t: number; height: number }[];
   /** Default floor height as fallback */
   baseFloorHeight: number;
+  /** Detected floor plane normal */
+  floorNormal: THREE.Vector3;
+  /** Detected floor plane distance from origin */
+  floorDistance: number;
+  /** Confidence in the detected floor plane */
+  floorConfidence: number;
   /** Eye level above floor (meters) */
   eyeHeight: number;
   /** Manual move speed in m/s */
@@ -26,7 +32,9 @@ const DEFAULT_PATH_DURATION = 10;
 const DEFAULT_DRIFT_SPEED = 0.4;
 const DEFAULT_MOVE_SPEED = 0.7;
 const Y_LERP_SPEED = 5;
-const MAX_HEIGHT_SAMPLE_DEVIATION = 2.5;
+const MIN_FLOOR_CONFIDENCE_FOR_PLANE = 0.35;
+const MAX_SAMPLE_PLANE_DELTA = 0.85;
+const MAX_HEIGHT_SAMPLE_DEVIATION = 1;
 const OFFSET_DECAY_SPEED = 1.2; // how fast the user offset blends back to zero (per second)
 
 export class TourCamera {
@@ -43,6 +51,9 @@ export class TourCamera {
   private fallbackGuidePoint = new THREE.Vector3();
   private heightSamples: { t: number; height: number }[];
   private baseFloorHeight: number;
+  private floorNormal: THREE.Vector3;
+  private floorDistance: number;
+  private floorConfidence: number;
   private eyeHeight: number;
   private moveSpeed: number;
   private walkableMin: THREE.Vector3;
@@ -68,6 +79,13 @@ export class TourCamera {
     this.baseFloorHeight = Number.isFinite(config.baseFloorHeight)
       ? config.baseFloorHeight
       : 0;
+    this.floorNormal = config.floorNormal.clone();
+    this.floorDistance = Number.isFinite(config.floorDistance)
+      ? config.floorDistance
+      : -this.baseFloorHeight;
+    this.floorConfidence = Number.isFinite(config.floorConfidence)
+      ? THREE.MathUtils.clamp(config.floorConfidence, 0, 1)
+      : 0;
     this.heightSamples = this.normalizeHeightSamples(config.heightSamples);
     this.eyeHeight = config.eyeHeight ?? DEFAULT_EYE_HEIGHT;
     this.moveSpeed = config.moveSpeed ?? DEFAULT_MOVE_SPEED;
@@ -82,6 +100,13 @@ export class TourCamera {
     this.baseFloorHeight = Number.isFinite(config.baseFloorHeight)
       ? config.baseFloorHeight
       : this.baseFloorHeight;
+    this.floorNormal.copy(config.floorNormal);
+    this.floorDistance = Number.isFinite(config.floorDistance)
+      ? config.floorDistance
+      : -this.baseFloorHeight;
+    this.floorConfidence = Number.isFinite(config.floorConfidence)
+      ? THREE.MathUtils.clamp(config.floorConfidence, 0, 1)
+      : 0;
     this.heightSamples = this.normalizeHeightSamples(config.heightSamples);
     this.eyeHeight = config.eyeHeight ?? DEFAULT_EYE_HEIGHT;
     this.moveSpeed = config.moveSpeed ?? DEFAULT_MOVE_SPEED;
@@ -123,7 +148,8 @@ export class TourCamera {
     this.offsetZ = 0;
 
     this.sampleGuidePoint(0, this.position);
-    this.position.y = this.interpolateHeight(0) + this.eyeHeight;
+    this.position.y =
+      this.computeFloorHeight(0, this.fallbackGuidePoint) + this.eyeHeight;
   }
 
   private normalizeHeightSamples(
@@ -171,6 +197,42 @@ export class TourCamera {
     }
   }
 
+  private computePlaneHeight(point: THREE.Vector3): number | null {
+    if (
+      this.floorConfidence < MIN_FLOOR_CONFIDENCE_FOR_PLANE ||
+      Math.abs(this.floorNormal.y) < 0.35 ||
+      !Number.isFinite(this.floorNormal.x) ||
+      !Number.isFinite(this.floorNormal.y) ||
+      !Number.isFinite(this.floorNormal.z) ||
+      !Number.isFinite(this.floorDistance)
+    ) {
+      return null;
+    }
+
+    return (
+      -(
+        this.floorNormal.x * point.x +
+        this.floorNormal.z * point.z +
+        this.floorDistance
+      ) / this.floorNormal.y
+    );
+  }
+
+  private computeFloorHeight(t: number, guidePoint: THREE.Vector3): number {
+    const sampleHeight = this.interpolateHeight(t);
+    const planeHeight = this.computePlaneHeight(guidePoint);
+
+    if (planeHeight === null || !Number.isFinite(planeHeight)) {
+      return sampleHeight;
+    }
+
+    if (Math.abs(sampleHeight - planeHeight) > MAX_SAMPLE_PLANE_DELTA) {
+      return planeHeight;
+    }
+
+    return sampleHeight * 0.65 + planeHeight * 0.35;
+  }
+
   /**
    * Update camera position for one frame.
    *
@@ -180,8 +242,18 @@ export class TourCamera {
    * User input adds to the offset. On release, the offset smoothly
    * decays back to zero — giving a buttery return to the guided rail.
    */
-  update(delta: number, input: InputState, yawAngle: number): void {
+  update(
+    delta: number,
+    input: InputState,
+    yawAngle: number,
+    autoSpeedMultiplier = 1,
+    paused = false,
+  ): void {
     const safeDelta = Number.isFinite(delta) ? Math.max(0, delta) : 0;
+    const speedMultiplier = Number.isFinite(autoSpeedMultiplier)
+      ? THREE.MathUtils.clamp(autoSpeedMultiplier, 0, 2)
+      : 1;
+    const tourDelta = paused ? 0 : safeDelta * speedMultiplier;
     const currentT = THREE.MathUtils.clamp(
       Number.isFinite(this.guideT) ? this.guideT : 0,
       0,
@@ -191,12 +263,12 @@ export class TourCamera {
     this.guideT = currentT;
 
     // 1. Always advance the guide point forward (drift never stops)
-    if (this.guideT < 1) {
+    if (this.guideT < 1 && !paused) {
       const dtPerSecond =
         this.hasUsableSpline && this.pathDuration > 0
           ? 1 / this.pathDuration
           : 0;
-      const nextT = this.guideT + dtPerSecond * safeDelta;
+      const nextT = this.guideT + dtPerSecond * tourDelta;
       this.guideT = THREE.MathUtils.clamp(
         Number.isFinite(nextT) ? nextT : this.guideT,
         0,
@@ -208,7 +280,7 @@ export class TourCamera {
     this.sampleGuidePoint(this.guideT, this._guidePos);
 
     // 3. Process user input as offset changes
-    if (input.isMoving) {
+    if (input.isMoving && !paused) {
       this._forward.set(-Math.sin(yawAngle), 0, -Math.cos(yawAngle));
       this._right.set(this._forward.z, 0, -this._forward.x);
 
@@ -221,7 +293,7 @@ export class TourCamera {
         this.offsetX += (vx / len) * this.moveSpeed * safeDelta;
         this.offsetZ += (vz / len) * this.moveSpeed * safeDelta;
       }
-    } else {
+    } else if (!paused) {
       // 4. Smoothly decay offset back to zero (buttery return to rail)
       const decay = Math.min(1, OFFSET_DECAY_SPEED * safeDelta);
       this.offsetX *= 1 - decay;
@@ -237,7 +309,8 @@ export class TourCamera {
     this.position.z = this._guidePos.z + this.offsetZ;
 
     // 6. Terrain follow: lerp Y toward floor + eye height
-    const targetY = this.interpolateHeight(this.guideT) + this.eyeHeight;
+    const targetY =
+      this.computeFloorHeight(this.guideT, this._guidePos) + this.eyeHeight;
     this.position.y +=
       (targetY - this.position.y) * Math.min(1, Y_LERP_SPEED * safeDelta);
 

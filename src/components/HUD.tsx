@@ -2,17 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 
 interface Props {
   sceneIndex: number;
-  totalScenes: number;
   showHints: boolean;
+  tourSpeed: number;
+  paused: boolean;
 }
 
-export function HUD({ sceneIndex, totalScenes, showHints }: Props) {
+export function HUD({ sceneIndex, showHints, tourSpeed, paused }: Props) {
   const [hintsVisible, setHintsVisible] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const sceneMarkers = Array.from(
-    { length: totalScenes },
-    (_, i) => `scene-${i + 1}`,
-  );
 
   // Show hints on scene entry, fade after 5 seconds
   useEffect(() => {
@@ -45,25 +42,18 @@ export function HUD({ sceneIndex, totalScenes, showHints }: Props) {
       >
         <p className="text-white/50 text-xs text-center whitespace-nowrap">
           {isMobile
-            ? 'Drag to look · Touch left side to move'
-            : 'Click to look around · WASD to move'}
+            ? 'Drag to look · Touch left side to move/speed · P pauses on keyboard'
+            : 'Click to look · W/↑ faster · S/↓ slower · A/D drift · +/- speed · P pause'}
         </p>
       </div>
 
-      {/* Scene progress dots */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
-        {sceneMarkers.map((sceneId, i) => (
-          <div
-            key={sceneId}
-            className={`w-1.5 h-1.5 rounded-full transition-colors duration-500 ${
-              i === sceneIndex
-                ? 'bg-white/60'
-                : i < sceneIndex
-                  ? 'bg-white/20'
-                  : 'bg-white/10'
-            }`}
-          />
-        ))}
+      <div className="absolute top-6 right-6 text-right">
+        <p className="text-[10px] tracking-[0.2em] text-white/35 uppercase">
+          {paused ? 'Paused' : 'Tour Speed'}
+        </p>
+        <p className="text-sm text-white/55">
+          {paused ? 'P to resume' : `${tourSpeed.toFixed(2)}x`}
+        </p>
       </div>
     </div>
   );
